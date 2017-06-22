@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eo pipefail
+set -exo pipefail
 
 gpg_private_key=/var/www/passbolt/app/Config/gpg/private.key
 gpg_public_key=/var/www/passbolt/app/Config/gpg/public.key
@@ -14,7 +14,7 @@ ssl_key='/etc/ssl/certs/certificate.key'
 ssl_cert='/etc/ssl/certs/certificate.crt'
 
 gpg_import_key() {
-
+  echo "Setup[keys]"
   local key_id=$(su -m -c "gpg --with-colons $gpg_private_key | grep sec |cut -f5 -d:" -ls /bin/bash nginx)
 
   su -m -c "$gpg --batch --import $gpg_public_key" -ls /bin/bash nginx
@@ -27,6 +27,7 @@ core_setup() {
   # cipherseed
   # url
 
+  echo "Setup[core]"
   local default_salt='DYhG93b0qyJfIxfs2guVoUubWwvniR2G0FgaC9mi'
   local default_seed='76859309657453542496749683645'
   local default_url='example.com'
@@ -44,6 +45,8 @@ db_setup() {
   # db_user
   # db_pass
   # db_name
+
+  echo "Setup[db]"
   local default_type='Database/Mysql'
   local default_host='localhost'
   local default_user='user'
@@ -64,6 +67,7 @@ app_setup() {
   # registration
   # ssl
 
+  echo "Setup[app]"
   local default_home='/home/www-data/.gnupg'
   local default_public_key='unsecure.key'
   local default_private_key='unsecure_private.key'
@@ -91,6 +95,7 @@ email_setup() {
   # email_username
   # email_password
 
+  echo "Setup[email]"
   local default_transport='Smtp'
   local default_from='contact@passbolt.com'
   local default_host='smtp.mandrillapp.com'
@@ -110,6 +115,7 @@ email_setup() {
 }
 
 install() {
+  echo "Setup[install-db]"
   local database=${db_host:-$(grep -m1 -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' $db_config)}
   tables=$(mysql -u ${db_user:-passbolt} -h $database -p -BN -e "SHOW TABLES FROM passbolt" -p${db_pass:-P4ssb0lt} |wc -l)
 
@@ -121,6 +127,7 @@ install() {
 }
 
 php_fpm_setup() {
+  echo "Setup[php-fpm]"
   sed -i '/^user\s/ s:nobody:nginx:g' /etc/php5/php-fpm.conf
   sed -i '/^group\s/ s:nobody:nginx:g' /etc/php5/php-fpm.conf
   cp /etc/php5/php-fpm.conf /etc/php5/fpm.d/www.conf
@@ -128,6 +135,7 @@ php_fpm_setup() {
 }
 
 email_cron_job() {
+  echo "Setup[cron-job]"
   local root_crontab='/etc/crontabs/root'
   local cron_task_dir='/etc/periodic/1min'
   local cron_task='/etc/periodic/1min/email_queue_processing'
