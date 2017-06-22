@@ -58,7 +58,7 @@ db_setup() {
   sed -i s:$default_host:$DB_HOST:g $db_config
   sed -i s:$default_user:$DB_USER:g $db_config
   sed -i s:$default_pass\',:$DB_PASS\',:g $db_config
-  sed -i s:$default_db:$DB_NAME $db_config
+  sed -i s:$default_db:$DB_NAME:g $db_config
 }
 
 app_setup() {
