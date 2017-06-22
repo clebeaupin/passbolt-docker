@@ -2,8 +2,8 @@
 
 set -eo pipefail
 
-gpg_private_key=/var/www/passbolt/app/Config/gpg/serverkey.private.asc
-gpg_public_key=/var/www/passbolt/app/Config/gpg/serverkey.asc
+gpg_private_key=/var/www/passbolt/app/Config/gpg/private.key
+gpg_public_key=/var/www/passbolt/app/Config/gpg/public.key
 gpg=$(which gpg)
 
 core_config='/var/www/passbolt/app/Config/core.php'
