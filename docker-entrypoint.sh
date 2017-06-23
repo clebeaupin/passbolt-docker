@@ -116,8 +116,11 @@ email_setup() {
 
 install() {
   echo "Setup[install-db]"
-  local database=${db_host:-$(grep -m1 -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' $db_config)}
-  tables=$(mysql -u ${db_user:-passbolt} -h $database -p -BN -e "SHOW TABLES FROM passbolt" -p${db_pass:-P4ssb0lt} |wc -l)
+  local database=$DB_HOST $db_config)}
+  #tables=$(mysql -u $DB_USER -h $database -p -BN -e "SHOW TABLES FROM passbolt" -p$DB_PASS} |wc -l)
+
+  tables=$(PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -d $DB_NAME -U $DB_USER -c "\dt" | wc -l)
+  tables=$[ $tables - 1 ]
 
   if [ $tables -eq 0 ]; then
     su -c "/var/www/passbolt/app/Console/cake install --send-anonymous-statistics true --no-admin" -ls /bin/bash nginx
