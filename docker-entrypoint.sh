@@ -31,11 +31,13 @@ core_setup() {
   local default_salt='DYhG93b0qyJfIxfs2guVoUubWwvniR2G0FgaC9mi'
   local default_seed='76859309657453542496749683645'
   local default_url='example.com'
+  local default_full_base_url="//Configure::write('App.fullBaseUrl', 'http://example.com')";
+  local new_full_base_url_config="Configure::write('App.fullBaseUrl', '$APP_BASE_URL')";
 
   cp $core_config{.default,}
   sed -i s:$default_salt:${salt:-$default_salt}:g $core_config
   sed -i s:$default_seed:${cipherseed:-$default_seed}:g $core_config
-  sed -i s:$default_url:${url:-$default_url}:g $core_config
+  sed -i "s#$default_full_base_url#$new_full_base_url_config#g" $core_config
 }
 
 db_setup() {
@@ -79,8 +81,8 @@ app_setup() {
 
   cp $app_config{.default,}
   sed -i s:$default_home:$gpg_home:g $app_config
-  sed -i s:$default_public_key:serverkey.asc:g $app_config
-  sed -i s:$default_private_key:serverkey.private.asc:g $app_config
+  sed -i s:$default_public_key:public.key:g $app_config
+  sed -i s:$default_private_key:private.key:g $app_config
   sed -i s:$default_fingerprint:${APP_FINGERPRINT:-$auto_fingerprint}:g $app_config
   sed -i "/force/ s:true:${APP_SSL:-true}:" $app_config
 }
@@ -116,11 +118,10 @@ email_setup() {
 
 install() {
   echo "Setup[install-db]"
-  local database=$DB_HOST $db_config)}
-  #tables=$(mysql -u $DB_USER -h $database -p -BN -e "SHOW TABLES FROM passbolt" -p$DB_PASS} |wc -l)
+  tables=$(mysql -u $DB_USER -h $DB_HOST -P $DB_PORT -BN -e "SHOW TABLES FROM $DB_NAME" -p$DB_PASS | wc -l)
 
-  tables=$(PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -d $DB_NAME -U $DB_USER -c "\dt" | wc -l)
-  tables=$[ $tables - 1 ]
+  #tables=$(PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -d $DB_NAME -U $DB_USER -c "\dt" | wc -l)
+  #tables=$[ $tables - 1 ]
 
   if [ $tables -eq 0 ]; then
     su -c "/var/www/passbolt/app/Console/cake install --send-anonymous-statistics true --no-admin" -ls /bin/bash nginx
