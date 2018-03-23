@@ -1,4 +1,4 @@
-FROM passbolt/passbolt:latest
+FROM passbolt/passbolt:2.0.0-rc2-alpine
 
 RUN apk update && \
     apk add postgresql-client && \
